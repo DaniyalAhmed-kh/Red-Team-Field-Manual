@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Team Field Manual — Operator Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════
+   ROOT & RESET
+═══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #1a1612;
+  --ink2: #2d2820;
+  --ink3: #4a4035;
+  --paper: #f4f0e8;
+  --paper2: #ede8dc;
+  --paper3: #e5dfd0;
+  --red: #c8001e;
+  --red2: #9a0016;
+  --amber: #b85c00;
+  --stamp-green: #1a5c2a;
+  --rule: #c8bfaa;
+  --rule2: #a89f8c;
+  --mono: 'Courier Prime', 'Courier New', monospace;
+  --display: 'Barlow Condensed', sans-serif;
+  --body: 'Barlow', sans-serif;
+  --col-w: 680px;
+}
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: #2a2520;
+  color: var(--ink);
+  font-family: var(--body);
+  font-weight: 400;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PAPER WRAPPER
+═══════════════════════════════════════════════════════ */
+.paper {
+  background: var(--paper);
+  max-width: 1160px;
+  margin: 0 auto;
+  position: relative;
+  /* Subtle paper grain */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),
+    linear-gradient(to bottom, var(--paper) 0%, #f0ebe0 100%);
+  box-shadow: 0 0 80px rgba(0,0,0,0.6), 0 0 200px rgba(0,0,0,0.3);
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════════
+   COVER PAGE
+═══════════════════════════════════════════════════════ */
+.cover {
+  padding: 0;
+  position: relative;
+  background: var(--ink);
+  color: var(--paper);
+  overflow: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.cover-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(200,0,30,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,0,30,0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.cover-redline {
+  height: 6px;
+  background: var(--red);
+  flex-shrink: 0;
+}
+
+.cover-content {
+  flex: 1;
+  padding: 60px 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.cover-classified {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--red);
+  border: 1px solid var(--red);
+  padding: 8px 16px;
+  width: fit-content;
+  margin-bottom: 60px;
+}
+
+.cover-classified::before, .cover-classified::after {
+  content: '■';
+  font-size: 6px;
+}
+
+.cover-main h1 {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: clamp(64px, 10vw, 140px);
+  line-height: 0.85;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+  color: var(--paper);
+  margin-bottom: 8px;
+}
+
+.cover-main h1 em {
+  color: var(--red);
+  font-style: normal;
+  display: block;
+}
+
+.cover-rule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--red) 0%, rgba(200,0,30,0.3) 60%, transparent 100%);
+  margin: 40px 0;
+}
+
+.cover-sub {
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: #8a8070;
+  max-width: 600px;
+  line-height: 2;
+}
+
+.cover-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 1px;
+  background: rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-top: 60px;
+}
+
+.cover-footer-cell {
+  padding: 24px 28px;
+  background: var(--ink);
+}
+
+.cover-footer-cell .label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #5a5045;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.cover-footer-cell .value {
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--paper);
+  letter-spacing: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   STICKY NAV
+═══════════════════════════════════════════════════════ */
+.field-nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--ink);
+  color: var(--paper);
+  border-bottom: 3px solid var(--red);
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.field-nav::-webkit-scrollbar { display: none; }
+
+.nav-logo {
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--red);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.nav-links {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav-links::-webkit-scrollbar { display: none; }
+
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #7a7060;
+  text-decoration: none;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid rgba(255,255,255,0.04);
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+  height: 48px;
+}
+
+.nav-links a:hover {
+  color: var(--paper);
+  background: rgba(200,0,30,0.12);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PAGE STRUCTURE
+═══════════════════════════════════════════════════════ */
+.page {
+  padding: 80px;
+  border-bottom: 1px solid var(--rule);
+  position: relative;
+}
+
+.page:last-child { border-bottom: none; }
+
+/* Left margin annotation system */
+.page-with-margin {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.margin-col {
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.margin-num {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 64px;
+  line-height: 1;
+  color: var(--rule);
+  letter-spacing: -2px;
+}
+
+.margin-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--ink3);
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  line-height: 1;
+}
+
+.margin-mitre {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--red2);
+  background: rgba(200,0,30,0.06);
+  border: 1px solid rgba(200,0,30,0.2);
+  padding: 4px 8px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SECTION HEADERS
+═══════════════════════════════════════════════════════ */
+.section-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-eyebrow::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(200,0,30,0.25);
+  max-width: 60px;
+}
+
+.section-title {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 0.9;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+
+.section-desc {
+  font-family: var(--body);
+  font-size: 15px;
+  color: var(--ink3);
+  max-width: 580px;
+  line-height: 1.75;
+  margin-bottom: 48px;
+  font-weight: 400;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RULE DIVIDERS
+═══════════════════════════════════════════════════════ */
+.rule-double {
+  border: none;
+  border-top: 3px double var(--rule2);
+  margin: 48px 0;
+}
+
+.rule-single {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 32px 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE CARDS
+═══════════════════════════════════════════════════════ */
+.phase-block {
+  margin-bottom: 64px;
+  scroll-margin-top: 60px;
+  position: relative;
+}
+
+.phase-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 32px;
+  align-items: start;
+  padding-bottom: 28px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 32px;
+}
+
+.phase-num-lg {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 88px;
+  line-height: 1;
+  color: var(--paper3);
+  letter-spacing: -4px;
+  margin-top: -8px;
+  user-select: none;
+}
+
+.phase-head-right {}
+
+.phase-tag-sm {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 6px;
+}
+
+.phase-name {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 36px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.phase-blurb {
+  font-family: var(--body);
+  font-size: 13px;
+  color: var(--ink3);
+  line-height: 1.65;
+  max-width: 500px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TECHNIQUE ROWS
+═══════════════════════════════════════════════════════ */
+.ttp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  margin-bottom: 24px;
+}
+
+.ttp-table th {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 2px solid var(--ink);
+  background: var(--paper2);
+}
+
+.ttp-table td {
+  padding: 10px 12px;
+  font-size: 11px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.ttp-table tr:hover td { background: rgba(200,0,30,0.03); }
+
+.ttp-id {
+  color: var(--red2);
+  font-size: 10px;
+  white-space: nowrap;
+  width: 100px;
+}
+
+.ttp-name {
+  font-weight: 700;
+  color: var(--ink);
+  width: 200px;
+}
+
+.ttp-detail {
+  color: var(--ink3);
+  font-family: var(--body);
+  font-size: 13px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TOOL GRID
+═══════════════════════════════════════════════════════ */
+.toolbox-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.tool-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 2px;
+  margin-bottom: 32px;
+}
+
+.t {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 14px;
+  background: var(--paper2);
+  border-left: 3px solid transparent;
+  transition: border-color 0.15s;
+  gap: 10px;
+}
+
+.t:hover { border-left-color: var(--red); }
+
+.t-name {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.t-desc {
+  font-family: var(--body);
+  font-size: 11px;
+  color: var(--ink3);
+  display: block;
+}
+
+.t-badge {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.free { background: rgba(26,92,42,0.1); color: var(--stamp-green); border: 1px solid rgba(26,92,42,0.25); }
+.paid { background: rgba(184,92,0,0.1); color: var(--amber); border: 1px solid rgba(184,92,0,0.25); }
+.both { background: rgba(200,0,30,0.07); color: var(--red2); border: 1px solid rgba(200,0,30,0.2); }
+
+/* ═══════════════════════════════════════════════════════
+   OPERATOR NOTE
+═══════════════════════════════════════════════════════ */
+.op-note {
+  background: var(--paper3);
+  border-top: 3px solid var(--ink);
+  border-bottom: 1px solid var(--rule2);
+  padding: 20px 24px 20px 56px;
+  position: relative;
+  margin: 32px 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.75;
+}
+
+.op-note::before {
+  content: '//';
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  color: var(--red);
+  font-family: var(--mono);
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.op-note strong { color: var(--ink); font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════════
+   TWO COLUMN CONTENT
+═══════════════════════════════════════════════════════ */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 32px;
+}
+
+.three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 960px) {
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .page { padding: 40px 32px; }
+  .page-with-margin { grid-template-columns: 1fr; }
+  .margin-col { position: static; flex-direction: row; align-items: center; }
+  .margin-label { writing-mode: horizontal-tb; transform: none; }
+  .cover-content { padding: 40px; }
+  .cover-footer { grid-template-columns: 1fr 1fr; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   STAMP ELEMENTS
+═══════════════════════════════════════════════════════ */
+.stamp {
+  display: inline-block;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 2px solid;
+  transform: rotate(-1.5deg);
+}
+
+.stamp-red { color: var(--red); border-color: var(--red); }
+.stamp-green { color: var(--stamp-green); border-color: var(--stamp-green); }
+
+/* ═══════════════════════════════════════════════════════
+   KILL CHAIN DIAGRAM
+═══════════════════════════════════════════════════════ */
+.killchain-strip {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink) var(--paper2);
+  gap: 0;
+  border: 2px solid var(--ink);
+  margin: 40px 0;
+  background: var(--ink);
+}
+
+.kc {
+  flex: 1;
+  min-width: 80px;
+  padding: 18px 12px;
+  text-align: center;
+  background: var(--paper2);
+  border-right: 1px solid var(--rule);
+  position: relative;
+  cursor: default;
+  transition: background 0.15s;
+}
+
+.kc:last-child { border-right: none; }
+.kc:hover { background: var(--paper3); }
+
+.kc-n {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 11px;
+  color: var(--red);
+  letter-spacing: 1px;
+}
+
+.kc-t {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  color: var(--ink3);
+  text-transform: uppercase;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   A-Z ENCYCLOPEDIA
+═══════════════════════════════════════════════════════ */
+.az-section {
+  background: var(--paper);
+  padding: 80px;
+  border-top: 3px solid var(--ink);
+}
+
+.az-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 2px solid var(--ink);
+  margin-top: 48px;
+}
+
+.az-entry {
+  border-right: 1px solid var(--rule2);
+  border-bottom: 1px solid var(--rule2);
+  padding: 32px;
+  position: relative;
+  transition: background 0.15s;
+}
+
+.az-entry:nth-child(even) { border-right: none; }
+.az-entry:nth-last-child(-n+2) { border-bottom: none; }
+.az-entry:hover { background: var(--paper2); }
+
+.az-letter {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 88px;
+  line-height: 0.85;
+  color: var(--paper3);
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  user-select: none;
+  letter-spacing: -4px;
+}
+
+.az-head {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.az-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.az-body {
+  font-family: var(--body);
+  font-size: 13px;
+  color: var(--ink3);
+  line-height: 1.75;
+  position: relative;
+  z-index: 1;
+}
+
+.az-body strong { color: var(--ink); font-weight: 600; }
+
+.az-tools {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.az-tool {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  background: var(--paper3);
+  border: 1px solid var(--rule2);
+  color: var(--ink2);
+  cursor: default;
+}
+
+.az-verdict {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--red);
+  background: rgba(200,0,30,0.04);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink2);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════
+   COMMAND EXAMPLES
+═══════════════════════════════════════════════════════ */
+.cmd {
+  background: var(--ink);
+  color: #e8e0d0;
+  padding: 16px 20px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.8;
+  margin: 12px 0;
+  border-left: 4px solid var(--red);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.cmd .prompt { color: var(--red); }
+.cmd .comment { color: #6a6055; }
+.cmd .flag { color: #c8a060; }
+.cmd .output { color: #7a9060; }
+
+/* ═══════════════════════════════════════════════════════
+   REPORT CHECKLIST
+═══════════════════════════════════════════════════════ */
+.checklist {
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1;
+}
+
+.checklist li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  line-height: 1.5;
+}
+
+.checklist li::before {
+  content: '□';
+  color: var(--red);
+  flex-shrink: 0;
+  font-size: 14px;
+  margin-top: 1px;
+}
+
+.checklist li:last-child { border-bottom: none; }
+
+/* ═══════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════ */
+.field-footer {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 48px 80px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 40px;
+  border-top: 6px solid var(--red);
+}
+
+.footer-col {}
+
+.footer-col-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #5a5045;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.footer-col p {
+  font-family: var(--body);
+  font-size: 12px;
+  color: #7a7060;
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SPECIAL LAYOUT: PHASE OVERVIEW TABLE
+═══════════════════════════════════════════════════════ */
+.overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 40px 0;
+}
+
+.overview-table th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.overview-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--body);
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.overview-table tr:nth-child(even) td { background: var(--paper2); }
+.overview-table tr:hover td { background: rgba(200,0,30,0.04); }
+
+.phase-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  margin-right: 8px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.mono-sm {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCROLL ANIMATION
+═══════════════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════════════ */
+.text-red { color: var(--red); }
+.text-amber { color: var(--amber); }
+.font-mono { font-family: var(--mono); }
+
+.page-rule {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 48px 0;
+}
+
+.page-rule::before, .page-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+.page-rule span {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  white-space: nowrap;
+}
+
+h3.sub-head {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink);
+  border-bottom: 2px solid var(--rule);
+  padding-bottom: 8px;
+  margin: 32px 0 16px;
+}
+</style>
+</head>
+<body>
+<div class="paper">
+
+<!-- ██████████████████████████████ COVER ██████████████████████████████ -->
+<div class="cover" id="top">
+  <div class="cover-grid"></div>
+  <div class="cover-redline"></div>
+  <div class="cover-content">
+    <div>
+      <div class="cover-classified">■ OPERATOR USE ONLY ■</div>
+      <div class="cover-main">
+        <h1>Red Team<em>Field Manual</em></h1>
+        <div class="cover-rule"></div>
+        <p class="cover-sub">
+          A Complete Adversary Simulation Framework<br>
+          16-Phase Operational Playbook · A–Z Encyclopedia<br>
+          MITRE ATT&CK v15 · PTES · OSSTMM Aligned
+        </p>
+      </div>
+    </div>
+    <div class="cover-footer">
+      <div class="cover-footer-cell"><span class="label">Edition</span><span class="value">2025 v5.0</span></div>
+      <div class="cover-footer-cell"><span class="label">Framework</span><span class="value">ATT&CK v15</span></div>
+      <div class="cover-footer-cell"><span class="label">Phases</span><span class="value">16 Total</span></div>
+      <div class="cover-footer-cell"><span class="label">Coverage</span><span class="value">A to Z</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ██████████████████████████████ NAV ██████████████████████████████ -->
+<nav class="field-nav">
+  <div class="nav-logo">RTFM</div>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#ph0">00 · Planning</a>
+    <a href="#ph1">01 · OSINT</a>
+    <a href="#ph2">02 · Weaponize</a>
+    <a href="#ph3">03 · Initial Access</a>
+    <a href="#ph4">04 · Execution</a>
+    <a href="#ph5">05 · Persistence</a>
+    <a href="#ph6">06 · PrivEsc</a>
+    <a href="#ph7">07 · Evasion</a>
+    <a href="#ph8">08 · Credentials</a>
+    <a href="#ph9">09 · Discovery</a>
+    <a href="#ph10">10 · Lateral Mvmt</a>
+    <a href="#ph11">11 · Collection</a>
+    <a href="#ph12">12 · C2</a>
+    <a href="#ph13">13 · Exfil</a>
+    <a href="#ph14">14 · Impact</a>
+    <a href="#ph15">15 · Reporting</a>
+    <a href="#az">A–Z Guide</a>
+  </div>
+</nav>
+
+<!-- ██████████████████████████████ OVERVIEW ██████████████████████████████ -->
+<div class="page reveal" id="overview">
+  <div class="section-eyebrow">Preface</div>
+  <h2 class="section-title">What this is</h2>
+  <p class="section-desc">
+    This is not a certification study guide. It is not a beginner tutorial. It is the operational reference that elite red teamers actually use — stripped of marketing fluff, written the way operators talk to each other. Every phase maps to real-world engagements. Every tool has been used in production. The A–Z guide at the back covers the concepts and mindset gaps that formal training programs never address.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <p class="section-desc" style="margin-bottom: 16px;">
+        <strong style="color:var(--ink)">Who built this framework:</strong> The techniques here come from APT-emulation work against Fortune 500 financial institutions, DoD contractor networks, critical infrastructure, and cloud-native environments. It reflects what works in 2025 against mature, instrumented, EDR-heavy targets — not lab machines.
+      </p>
+      <p class="section-desc">
+        <strong style="color:var(--ink)">How to use it:</strong> The 16 phases are sequential but non-linear. Real engagements loop. You'll be in lateral movement and suddenly need to revisit OSINT because you found a new subnet. Use this as a decision tree, not a checklist.
+      </p>
+    </div>
+    <div>
+      <div class="op-note" style="margin-top:0;">
+        The number one mistake junior operators make is rushing to exploitation. Senior operators spend 40% of engagement time in recon and planning. The more you know before you touch a system, the quieter and more precise your attack will be. Quiet operations don't get caught. Noisy operations end with a phone call from the client's CISO stopping the engagement.
+      </div>
+      <div style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
+        <span class="stamp stamp-red">Authorized Use Only</span>
+        <span class="stamp stamp-green">Signed ROE Required</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-rule"><span>Kill Chain Overview</span></div>
+
+  <div class="killchain-strip">
+    <div class="kc"><div class="kc-n">00</div><div class="kc-t">Planning</div></div>
+    <div class="kc"><div class="kc-n">01</div><div class="kc-t">OSINT</div></div>
+    <div class="kc"><div class="kc-n">02</div><div class="kc-t">Weaponize</div></div>
+    <div class="kc"><div class="kc-n">03</div><div class="kc-t">Init Access</div></div>
+    <div class="kc"><div class="kc-n">04</div><div class="kc-t">Execution</div></div>
+    <div class="kc"><div class="kc-n">05</div><div class="kc-t">Persist</div></div>
+    <div class="kc"><div class="kc-n">06</div><div class="kc-t">PrivEsc</div></div>
+    <div class="kc"><div class="kc-n">07</div><div class="kc-t">Evasion</div></div>
+    <div class="kc"><div class="kc-n">08</div><div class="kc-t">Cred Access</div></div>
+    <div class="kc"><div class="kc-n">09</div><div class="kc-t">Discovery</div></div>
+    <div class="kc"><div class="kc-n">10</div><div class="kc-t">Lateral Mvmt</div></div>
+    <div class="kc"><div class="kc-n">11</div><div class="kc-t">Collection</div></div>
+    <div class="kc"><div class="kc-n">12</div><div class="kc-t">C2</div></div>
+    <div class="kc"><div class="kc-n">13</div><div class="kc-t">Exfil</div></div>
+    <div class="kc"><div class="kc-n">14</div><div class="kc-t">Impact</div></div>
+    <div class="kc"><div class="kc-n">15</div><div class="kc-t">Report</div></div>
+  </div>
+
+  <table class="overview-table">
+    <thead><tr><th>Phase</th><th>Name</th><th>MITRE Tactic</th><th>Primary Goal</th><th>Time Allocation</th></tr></thead>
+    <tbody>
+      <tr><td class="mono-sm">00</td><td><strong>Planning & Scoping</strong></td><td class="mono-sm">PRE-ATT&CK</td><td>Legal auth, threat profile, infra setup</td><td class="mono-sm">15–25%</td></tr>
+      <tr><td class="mono-sm">01</td><td><strong>Reconnaissance</strong></td><td class="mono-sm">TA0043</td><td>Attack surface mapping, target intel</td><td class="mono-sm">10–20%</td></tr>
+      <tr><td class="mono-sm">02</td><td><strong>Weaponization</strong></td><td class="mono-sm">TA0042</td><td>Custom payloads, phishing infra, C2 setup</td><td class="mono-sm">5–15%</td></tr>
+      <tr><td class="mono-sm">03</td><td><strong>Initial Access</strong></td><td class="mono-sm">TA0001</td><td>First foothold in target environment</td><td class="mono-sm">5–10%</td></tr>
+      <tr><td class="mono-sm">04</td><td><strong>Execution</strong></td><td class="mono-sm">TA0002</td><td>Run attacker code on target systems</td><td class="mono-sm">Ongoing</td></tr>
+      <tr><td class="mono-sm">05</td><td><strong>Persistence</strong></td><td class="mono-sm">TA0003</td><td>Survive reboots, maintain access</td><td class="mono-sm">Ongoing</td></tr>
+      <tr><td class="mono-sm">06</td><td><strong>Privilege Escalation</strong></td><td class="mono-sm">TA0004</td><td>Elevate to SYSTEM / Domain Admin</td><td class="mono-sm">10–20%</td></tr>
+      <tr><td class="mono-sm">07</td><td><strong>Defense Evasion</strong></td><td class="mono-sm">TA0005</td><td>Avoid detection throughout engagement</td><td class="mono-sm">Ongoing</td></tr>
+      <tr><td class="mono-sm">08</td><td><strong>Credential Access</strong></td><td class="mono-sm">TA0006</td><td>Harvest hashes, tickets, plaintext creds</td><td class="mono-sm">5–10%</td></tr>
+      <tr><td class="mono-sm">09</td><td><strong>Discovery</strong></td><td class="mono-sm">TA0007</td><td>Internal recon: hosts, users, data</td><td class="mono-sm">5–10%</td></tr>
+      <tr><td class="mono-sm">10</td><td><strong>Lateral Movement</strong></td><td class="mono-sm">TA0008</td><td>Traverse network toward objective</td><td class="mono-sm">10–20%</td></tr>
+      <tr><td class="mono-sm">11</td><td><strong>Collection</strong></td><td class="mono-sm">TA0009</td><td>Identify and stage target data</td><td class="mono-sm">5–10%</td></tr>
+      <tr><td class="mono-sm">12</td><td><strong>C2</strong></td><td class="mono-sm">TA0011</td><td>Maintain operator ↔ implant comms</td><td class="mono-sm">Ongoing</td></tr>
+      <tr><td class="mono-sm">13</td><td><strong>Exfiltration</strong></td><td class="mono-sm">TA0010</td><td>Move data out without triggering DLP</td><td class="mono-sm">2–5%</td></tr>
+      <tr><td class="mono-sm">14</td><td><strong>Impact Simulation</strong></td><td class="mono-sm">TA0040</td><td>Demonstrate business impact potential</td><td class="mono-sm">2–5%</td></tr>
+      <tr><td class="mono-sm">15</td><td><strong>Reporting & Debrief</strong></td><td class="mono-sm">POST-ENG</td><td>Deliverable that drives remediation</td><td class="mono-sm">15–25%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ██████████████████████████████ PHASE 00 ██████████████████████████████ -->
+<div class="page reveal" id="ph0">
+  <div class="phase-block">
+    <div class="phase-head">
+      <div class="phase-num-lg">00</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phase Zero · PRE-ATT&CK</div>
+        <div class="phase-name">Planning & Scoping</div>
+        <p class="phase-blurb">The phase that separates professionals from amateurs. Poor scoping creates legal liability. Elite operators spend a fifth of the engagement here.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 class="sub-head">Legal Foundation</h3>
+        <table class="ttp-table">
+          <thead><tr><th>Document</th><th>Purpose & What to Nail Down</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-name">Rules of Engagement</td><td class="ttp-detail">In-scope IP ranges, excluded systems (production DB, SCADA), time windows, emergency stop procedure, escalation contacts</td></tr>
+            <tr><td class="ttp-name">Statement of Work</td><td class="ttp-detail">Deliverables, timeline, liability clause, payment schedule, NDA, breach notification responsibility</td></tr>
+            <tr><td class="ttp-name">Get-Out-of-Jail Letter</td><td class="ttp-detail">Signed authorization carried by every operator in the field. Physical copy. Two copies.</td></tr>
+            <tr><td class="ttp-name">Data Handling Policy</td><td class="ttp-detail">How captured PII, credentials, screenshots are stored, encrypted, and destroyed post-engagement</td></tr>
+            <tr><td class="ttp-name">Deconfliction Plan</td><td class="ttp-detail">SOC notification protocol so a real IR response doesn't get mixed up with your engagement traffic</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="sub-head">Objective Definition</h3>
+        <table class="ttp-table">
+          <thead><tr><th>Decision</th><th>Options & Operator Guidance</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-name">Engagement Type</td><td class="ttp-detail">Black Box (no info, realistic), Grey Box (some info, efficient), Assumed Breach (post-compromise sim), Full Simulation (multi-month APT emulation)</td></tr>
+            <tr><td class="ttp-name">Threat Actor Profile</td><td class="ttp-detail">Are you emulating APT29, FIN7, Scattered Spider? Research their TTPs and replicate them — this is adversary simulation, not generic pentesting</td></tr>
+            <tr><td class="ttp-name">Crown Jewels</td><td class="ttp-detail">Define success before starting: DA cert, specific database, wire transfer system, classified document. Ambiguous objectives = watered-down reports</td></tr>
+            <tr><td class="ttp-name">Success Metrics</td><td class="ttp-detail">Dwell time, number of detection gaps, objectives reached, mean-time-to-detect (MTTD), mean-time-to-respond (MTTR)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h3 class="sub-head">Infrastructure Setup</h3>
+        <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.7;">
+          Your attack infrastructure is your OPSEC backbone. If it gets burned, your operation is over. Set this up weeks before the engagement starts.
+        </p>
+        <table class="ttp-table">
+          <thead><tr><th>Component</th><th>Setup Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-name">Domains</td><td class="ttp-detail">Buy 60+ days before engagement. Age them. Register in target's industry vertical for believability. Use separate registrar from personal domains.</td></tr>
+            <tr><td class="ttp-name">Redirectors</td><td class="ttp-detail">VPS servers running Nginx/Apache with mod_rewrite. Forward valid C2 callbacks to C2 server. Forward all other traffic (Blue Team recon) to legit site.</td></tr>
+            <tr><td class="ttp-name">C2 Servers</td><td class="ttp-detail">Never expose directly. Sit behind redirectors. Different jurisdiction from redirectors. Wipe between engagements.</td></tr>
+            <tr><td class="ttp-name">Operator OPSEC</td><td class="ttp-detail">Dedicated VMs per campaign. No personal accounts anywhere. VPN to redirector before C2 access. Encrypted comms for team (Signal or Matrix).</td></tr>
+            <tr><td class="ttp-name">Logging</td><td class="ttp-detail">Log every action with timestamps from day one. You will need this for the report. Use Ghostwriter or a simple timestamped markdown log.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="op-note">
+          <strong>The threat actor profile matters more than your tooling.</strong> If your client is a defense contractor, research what nation-state groups actually target defense contractors: their phishing lures, their C2 protocols, their preferred escalation paths. A red team that emulates APT41 accurately teaches the Blue Team what APT41 looks like on their wire. A generic pentest teaches them nothing about their real threat landscape.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ██████████████████████████████ PHASE 01 ██████████████████████████████ -->
+<div class="page reveal" id="ph1">
+  <div class="phase-block">
+    <div class="phase-head">
+      <div class="phase-num-lg">01</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phase One · TA0043</div>
+        <div class="phase-name">Reconnaissance & OSINT</div>
+        <p class="phase-blurb">Elite operators spend real time here. The goal is to know the target better than their own IT team does — without ever touching their network.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 class="sub-head">Passive Techniques</h3>
+        <table class="ttp-table">
+          <thead><tr><th>ID</th><th>Technique</th><th>What You're Looking For</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-id">T1596</td><td class="ttp-name">Technical Databases</td><td class="ttp-detail">Shodan/Censys/FOFA for exposed infrastructure. VPNs, OWA, RDP, Jenkins, Citrix, old Exchange — these are initial access candidates.</td></tr>
+            <tr><td class="ttp-id">T1593</td><td class="ttp-name">Open Websites</td><td class="ttp-detail">crt.sh for all subdomains via cert transparency. Historical WHOIS for old IP ranges. Wayback Machine for old code and endpoints.</td></tr>
+            <tr><td class="ttp-id">T1591</td><td class="ttp-name">Org Recon</td><td class="ttp-detail">LinkedIn for org chart: who's in IT, Security, Finance. Job postings reveal tech stack. Glassdoor reviews mention specific tools.</td></tr>
+            <tr><td class="ttp-id">T1589</td><td class="ttp-name">Identity Intel</td><td class="ttp-detail">Email pattern discovery. Leaked credential databases (Dehashed, LeakIX). Have employees been in prior breaches? Password reuse is real.</td></tr>
+            <tr><td class="ttp-id">T1594</td><td class="ttp-name">Code Repos</td><td class="ttp-detail">GitHub search: org name + password / api_key / .env / secret. TruffleHog against public repos. This hits almost every engagement.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3 class="sub-head">Active Techniques</h3>
+        <table class="ttp-table">
+          <thead><tr><th>ID</th><th>Technique</th><th>Approach</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-id">T1595</td><td class="ttp-name">Scanning</td><td class="ttp-detail">Subdomain enum → live host detection → port scan → service fingerprint. Use your own infrastructure, not your home IP.</td></tr>
+            <tr><td class="ttp-id">T1595.002</td><td class="ttp-name">Vuln Scan</td><td class="ttp-detail">Nuclei with CVE templates against discovered services. Focus on public-facing: VPNs, mail servers, web apps.</td></tr>
+            <tr><td class="ttp-id">T1596.005</td><td class="ttp-name">Storage Buckets</td><td class="ttp-detail">S3 bucket brute force, open Azure blob containers, public GCS. Companies leave more here than you'd think.</td></tr>
+            <tr><td class="ttp-id">T1590</td><td class="ttp-name">Network Mapping</td><td class="ttp-detail">ASN enumeration gives you all owned IP ranges. Reverse DNS. BGP data from RIPE/ARIN for full network picture.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="op-note">
+          Chain tools systematically: <strong>subfinder → httpx → nuclei → eyewitness</strong>. You'll end up with a visual gallery of every web-facing service. Then manually review for low-hanging fruit: default creds, unauthenticated admin panels, exposed .git directories, outdated software. This takes hours and finds more than automated scanners alone.
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbox-label">// OSINT TOOLCHAIN</div>
+    <div class="tool-row">
+      <div class="t"><div><span class="t-name">Amass</span><span class="t-desc">Best subdomain enumeration, OWASP project</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">subfinder</span><span class="t-desc">Fast passive subdomain enumeration</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">httpx</span><span class="t-desc">Live host probing, screenshot, tech detect</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">nuclei</span><span class="t-desc">3000+ CVE and misconfig templates</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Shodan</span><span class="t-desc">Internet device scanner, API essential</span></div><span class="t-badge both">FREE/PAID</span></div>
+      <div class="t"><div><span class="t-name">Censys</span><span class="t-desc">Cert intelligence + service data</span></div><span class="t-badge both">FREE/PAID</span></div>
+      <div class="t"><div><span class="t-name">theHarvester</span><span class="t-desc">Email, hostname, URL harvesting</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">truffleHog</span><span class="t-desc">Deep git history secret scanning</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">gitleaks</span><span class="t-desc">Fast secrets detection in repositories</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">SpiderFoot</span><span class="t-desc">Automated OSINT 200+ modules</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Maltego</span><span class="t-desc">Visual OSINT link analysis and mapping</span></div><span class="t-badge both">FREE/PAID</span></div>
+      <div class="t"><div><span class="t-name">Dehashed</span><span class="t-desc">Leaked credential database search</span></div><span class="t-badge paid">PAID</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ██████████████████████████████ PHASE 02 ██████████████████████████████ -->
+<div class="page reveal" id="ph2">
+  <div class="phase-block">
+    <div class="phase-head">
+      <div class="phase-num-lg">02</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phase Two · TA0042</div>
+        <div class="phase-name">Weaponization</div>
+        <p class="phase-blurb">Building the tools, payloads, and infrastructure for the engagement. Default tools get caught. Custom tooling is what gets you through mature EDR.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 class="sub-head">Payload Development</h3>
+        <table class="ttp-table">
+          <thead><tr><th>Technique</th><th>What Elite Operators Do</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-name">Custom Loaders</td><td class="ttp-detail">Write shellcode loaders in Nim, Rust, or Go. New languages = no existing AV signatures. Encrypt shellcode (AES-256), decrypt at runtime.</td></tr>
+            <tr><td class="ttp-name">Multi-Stage</td><td class="ttp-detail">Stage 1 is tiny, checks environment (domain joined? VM? Right user?), only then fetches stage 2. Prevents detonation in sandbox.</td></tr>
+            <tr><td class="ttp-name">Anti-Sandbox</td><td class="ttp-detail">Sleep >120s (sandboxes fast-forward or timeout), check mouse movement, user activity, disk size >50GB, real domain check via LDAP.</td></tr>
+            <tr><td class="ttp-name">String Obfuscation</td><td class="ttp-detail">XOR all IOC strings at compile time. Decrypt at runtime. No static signatures on tool names, IPs, or registry keys.</td></tr>
+            <tr><td class="ttp-name">BOF Development</td><td class="ttp-detail">Beacon Object Files for Cobalt Strike/Havoc. Run in beacon memory, no new process. Harder to detect than fork-and-run.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3 class="sub-head">Phishing Infrastructure</h3>
+        <table class="ttp-table">
+          <thead><tr><th>Component</th><th>Setup Details</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-name">Domain Selection</td><td class="ttp-detail">Typosquatting, combo-squatting, or acquire domains resembling vendors the target uses. Check email-categorization sites before using.</td></tr>
+            <tr><td class="ttp-name">Mail Setup</td><td class="ttp-detail">Full SPF + DKIM + DMARC on sending domain. Test deliverability via mail-tester.com before campaign. Warm up domain with legit traffic first.</td></tr>
+            <tr><td class="ttp-name">Evilginx Setup</td><td class="ttp-detail">MFA bypass via adversary-in-the-middle proxy. Captures session tokens, bypasses all MFA types. Deploy behind CDN for longevity.</td></tr>
+            <tr><td class="ttp-name">Lure Design</td><td class="ttp-detail">Spearphish wins come from context: reference real internal project names, real employee names, real vendors. Generic lures underperform.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="op-note">
+          <strong>HTML Smuggling is the most consistently effective delivery method in 2025.</strong> Assemble the payload client-side using JavaScript Blob() and URL.createObjectURL(). Email gateway scans an HTML file with no attachment — user opens it in browser and the file downloads. Combine with an ISO or LNK container to bypass Mark-of-the-Web protections.
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbox-label">// WEAPONIZATION TOOLKIT</div>
+    <div class="tool-row">
+      <div class="t"><div><span class="t-name">Cobalt Strike</span><span class="t-desc">Industry-standard C2 — customize everything</span></div><span class="t-badge paid">PAID $3.5k/yr</span></div>
+      <div class="t"><div><span class="t-name">Havoc C2</span><span class="t-desc">Best free alternative, modern evasion</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Sliver</span><span class="t-desc">Go-based, mTLS/DNS/HTTP/WireGuard</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Donut</span><span class="t-desc">Converts PE/.NET to position-independent shellcode</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">ScareCrow</span><span class="t-desc">Shellcode loader generator with EDR bypass</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">ThreatCheck</span><span class="t-desc">Find exact bytes that trigger Defender/AMSI</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Evilginx 3</span><span class="t-desc">AiTM proxy — captures MFA session tokens</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">GoPhish</span><span class="t-desc">Phishing campaign management platform</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Brute Ratel C4</span><span class="t-desc">EDR-aware commercial C2, strong evasion</span></div><span class="t-badge paid">PAID</span></div>
+      <div class="t"><div><span class="t-name">Freeze</span><span class="t-desc">Shellcode loader with ETW/AMSI patches built in</span></div><span class="t-badge free">FREE</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ██████████████████████████████ PHASE 03 ██████████████████████████████ -->
+<div class="page reveal" id="ph3">
+  <div class="phase-block">
+    <div class="phase-head">
+      <div class="phase-num-lg">03</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phase Three · TA0001</div>
+        <div class="phase-name">Initial Access</div>
+        <p class="phase-blurb">Getting your first foothold. The most creative phase. Combine technical exploitation, human psychology, and physical access depending on scope.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 class="sub-head">Human-Based Vectors</h3>
+        <table class="ttp-table">
+          <thead><tr><th>ID</th><th>Technique</th><th>2025 Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-id">T1566.001</td><td class="ttp-name">Spearphish Attach.</td><td class="ttp-detail">ISO/LNK combos, OneNote embeds with HTML smuggling, SVG/HTML blobs. Office macros largely dead without policy changes.</td></tr>
+            <tr><td class="ttp-id">T1566.002</td><td class="ttp-name">Spearphish Link</td><td class="ttp-detail">Evilginx reverse proxy for credential + session token harvest. Bypasses every MFA type. QR code phishing (Quishing) evades link scanning.</td></tr>
+            <tr><td class="ttp-id">T1598</td><td class="ttp-name">Vishing</td><td class="ttp-detail">Call helpdesk impersonating an employee. Request password reset or MFA bypass. Works at ~60% hit rate in most enterprise environments.</td></tr>
+            <tr><td class="ttp-id">T1566.004</td><td class="ttp-name">MFA Fatigue</td><td class="ttp-detail">Send 30+ MFA push notifications until user approves to make them stop. Then call pretending to be IT and walk them through "confirming".</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3 class="sub-head">Technical Vectors</h3>
+        <table class="ttp-table">
+          <thead><tr><th>ID</th><th>Technique</th><th>Priority Targets</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-id">T1190</td><td class="ttp-name">Public App Exploit</td><td class="ttp-detail">Web apps, VPN appliances (Fortinet, Pulse, Citrix), Exchange/OWA, exposed admin panels. Check CISA KEV for recent exploitation.</td></tr>
+            <tr><td class="ttp-id">T1133</td><td class="ttp-name">External Remote Svc</td><td class="ttp-detail">VPN/RDP with leaked creds from Dehashed. Unpatched CVEs on Citrix Netscaler, Pulse Secure, Fortinet. RDP directly exposed to internet.</td></tr>
+            <tr><td class="ttp-id">T1078</td><td class="ttp-name">Valid Accounts</td><td class="ttp-detail">Password spray O365/Azure AD with slow, distributed sprays. 1 attempt per account per hour avoids lockouts. Check MFASweep for gaps.</td></tr>
+            <tr><td class="ttp-id">T1195</td><td class="ttp-name">Supply Chain</td><td class="ttp-detail">Compromise a trusted MSP or software vendor. One foothold = access to dozens of clients. High complexity, very high reward.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="op-note">
+          Password spraying works. The number <strong>still in use at most organizations: Summer2024, Welcome1, CompanyName1!</strong> Run a spray with those exact patterns plus a handful of season+year combos first. Then use proper wordlists. Go slow: 1 attempt per username per 60 minutes. Use TREVORspray for built-in lockout avoidance.
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbox-label">// INITIAL ACCESS TOOLKIT</div>
+    <div class="tool-row">
+      <div class="t"><div><span class="t-name">Evilginx 3</span><span class="t-desc">MFA bypass phishing proxy</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">TREVORspray</span><span class="t-desc">O365 password spray with lockout evasion</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Burp Suite Pro</span><span class="t-desc">Web application testing proxy</span></div><span class="t-badge paid">PAID $499/yr</span></div>
+      <div class="t"><div><span class="t-name">nuclei</span><span class="t-desc">CVE templates for VPN/OWA/WebApp</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">MFASweep</span><span class="t-desc">Find Microsoft MFA coverage gaps</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">SQLmap</span><span class="t-desc">Automated SQL injection exploitation</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Flipper Zero</span><span class="t-desc">RFID/NFC/RF for physical engagements</span></div><span class="t-badge paid">PAID ~$200</span></div>
+      <div class="t"><div><span class="t-name">WiFi Pineapple</span><span class="t-desc">Rogue AP / MITM for physical ops</span></div><span class="t-badge paid">PAID ~$120</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ██████████████████████████████ PHASES 04-07 CONDENSED ██████████████████████████████ -->
+<div class="page reveal" id="ph4">
+  <div class="phase-block">
+    <div class="phase-head">
+      <div class="phase-num-lg">04</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phase Four · TA0002</div>
+        <div class="phase-name">Execution</div>
+        <p class="phase-blurb">Running your code on target systems. The EDR problem is here. Every technique below is about executing while not spawning suspicious process trees.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <table class="ttp-table">
+          <thead><tr><th>ID</th><th>Technique</th><th>Operator Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-id">T1059.001</td><td class="ttp-name">PowerShell</td><td class="ttp-detail">Patch AMSI first. Use encoded commands. Never call powershell.exe from your implant directly — use a reflective loader instead.</td></tr>
+            <tr><td class="ttp-id">T1218</td><td class="ttp-name">Signed Binary Proxy</td><td class="ttp-detail">LOLBAS: rundll32, regsvr32, mshta, msiexec, certutil. All signed, all present by default. Each one has known detection and evasion patterns.</td></tr>
+            <tr><td class="ttp-id">T1055</td><td class="ttp-name">Process Injection</td><td class="ttp-detail">Inject into Explorer, Svchost, Teams. Classic injection, process hollowing, thread hijacking, APC injection. Use direct syscalls to avoid hooks.</td></tr>
+            <tr><td class="ttp-id">T1055.004</td><td class="ttp-name">APC Injection</td><td class="ttp-detail">Queue APC to alertable thread. Less detectable than classic CreateRemoteThread injection in mature EDR environments.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="op-note">
+          <strong>The golden rule of execution: never create a new process from your implant parent.</strong> spawning cmd.exe, powershell.exe, or any new process from your beacon is detected by behavioral analytics in seconds. Use BOFs (run in beacon memory), or inject into already-running legitimate processes. SysWhispers3 for direct syscalls bypasses user-mode EDR hooks at the NTDLL layer.
+        </div>
+
+        <div class="toolbox-label" style="margin-top:24px;">// EXECUTION TOOLS</div>
+        <div class="tool-row">
+          <div class="t"><div><span class="t-name">SysWhispers3</span><span class="t-desc">Direct syscall bypass for EDR hooks</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">BOF Collection</span><span class="t-desc">Beacon Object Files (CS/Havoc)</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">LOLBAS</span><span class="t-desc">Living-off-the-land binary database</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">SharpCollection</span><span class="t-desc">Compiled .NET offensive tooling</span></div><span class="t-badge free">FREE</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule-double">
+
+  <div class="phase-block" id="ph5">
+    <div class="phase-head">
+      <div class="phase-num-lg">05</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phase Five · TA0003</div>
+        <div class="phase-name">Persistence</div>
+        <p class="phase-blurb">Surviving reboots, credential resets, and periodic security reviews. Choose methods that look like legitimate system behavior.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 class="sub-head">Windows Persistence</h3>
+        <table class="ttp-table">
+          <thead><tr><th>ID</th><th>Method</th><th>Detection Risk</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-id">T1546.003</td><td class="ttp-name">WMI Subscriptions</td><td class="ttp-detail">Permanent WMI event subscriptions survive reboots. Very stealthy — no new services, no obvious registry keys. High-value targets only.</td></tr>
+            <tr><td class="ttp-id">T1053.005</td><td class="ttp-name">Scheduled Tasks</td><td class="ttp-detail">Name task like a legit Windows task. Set trigger to ONLOGON or a specific future time. Writable XML if you know the format.</td></tr>
+            <tr><td class="ttp-id">T1547.001</td><td class="ttp-name">Run Keys</td><td class="ttp-detail">HKCU works without admin. Noisier than WMI. Use when you need quick persistence and will clean up soon.</td></tr>
+            <tr><td class="ttp-id">T1543.003</td><td class="ttp-name">Windows Service</td><td class="ttp-detail">Requires admin. Name it close to existing services. Set description to match. Very persistent but logged in EventID 7045.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3 class="sub-head">Linux & Cloud Persistence</h3>
+        <table class="ttp-table">
+          <thead><tr><th>Method</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-name">Cron Jobs</td><td class="ttp-detail">User-level in crontab. Root-level in /etc/cron.d/. Name the file something boring. Run a callback every 15 minutes.</td></tr>
+            <tr><td class="ttp-name">Systemd Unit</td><td class="ttp-detail">Create .service file. Set Restart=always. sudo systemctl enable —now. Clean, reliable, looks like legit software.</td></tr>
+            <tr><td class="ttp-name">SSH Keys</td><td class="ttp-detail">Add your public key to ~/.ssh/authorized_keys. Root if you have it. Survives password changes. Simple and effective.</td></tr>
+            <tr><td class="ttp-name">Cloud Backdoors</td><td class="ttp-detail">Azure: create service principal with Contributor. AWS: add IAM user with programmatic access. Invisible unless someone audits IAM.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ██████████████████████████████ PHASES 06-07 ██████████████████████████████ -->
+<div class="page reveal" id="ph6">
+  <div class="phase-block">
+    <div class="phase-head">
+      <div class="phase-num-lg">06</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phase Six · TA0004</div>
+        <div class="phase-name">Privilege Escalation</div>
+        <p class="phase-blurb">From low-privilege user to SYSTEM or Domain Admin. The most technically demanding phase. Active Directory environments have an embarrassing number of paths.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 class="sub-head">Windows Local PrivEsc</h3>
+        <table class="ttp-table">
+          <thead><tr><th>ID</th><th>Technique</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-id">T1134.001</td><td class="ttp-name">Token Impersonation</td><td class="ttp-detail">SeImpersonatePrivilege on service accounts → SYSTEM via GodPotato, PrintSpoofer, EfsPotato. Hits 80%+ of service accounts.</td></tr>
+            <tr><td class="ttp-id">T1574.010</td><td class="ttp-name">Service Weakness</td><td class="ttp-detail">Writable service binary, unquoted service path, weak ACLs on service config. PowerUp.ps1 finds these in seconds.</td></tr>
+            <tr><td class="ttp-id">T1548.002</td><td class="ttp-name">UAC Bypass</td><td class="ttp-detail">fodhelper, eventvwr, CMSTPLUA COM hijack. UACME has 60+ bypass methods. Most work even on fully patched systems.</td></tr>
+            <tr><td class="ttp-id">T1611</td><td class="ttp-name">Container Escape</td><td class="ttp-detail">Privileged container, mounted Docker socket, dangerous capabilities (SYS_ADMIN). deepce enumerates automatically.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3 class="sub-head">Active Directory PrivEsc</h3>
+        <table class="ttp-table">
+          <thead><tr><th>Technique</th><th>What to Know</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-name">Kerberoasting</td><td class="ttp-detail">Any domain user can request service tickets. Extract hash offline. Service accounts often have weak passwords. Prioritize high-priv SPNs.</td></tr>
+            <tr><td class="ttp-name">AS-REP Roasting</td><td class="ttp-detail">Users with Kerberos pre-auth disabled. No privilege required. Get offline hash. Often forgotten accounts with privileged access.</td></tr>
+            <tr><td class="ttp-name">ACL Abuse</td><td class="ttp-detail">GenericAll/GenericWrite on users → reset password. WriteDACL → grant yourself DCSync. BloodHound finds these automatically.</td></tr>
+            <tr><td class="ttp-name">ADCS ESC1-ESC13</td><td class="ttp-name">Present in 90%+ of environments. ESC1: enroll cert as any user → authenticate as DA. Certipy finds and exploits in one workflow.</td></tr>
+            <tr><td class="ttp-name">Shadow Credentials</td><td class="ttp-detail">Add Key Credential to target's msDS-KeyCredentialLink. Authenticate via PKINIT. Requires write to target object.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="toolbox-label">// PRIVILEGE ESCALATION TOOLKIT</div>
+    <div class="tool-row">
+      <div class="t"><div><span class="t-name">BloodHound / CE</span><span class="t-desc">AD attack path visualization — run first</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Rubeus</span><span class="t-desc">Kerberoast, AS-REP roast, ticket abuse</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Certipy</span><span class="t-desc">ADCS enumeration and exploitation</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">GodPotato</span><span class="t-desc">SeImpersonate → SYSTEM, works on Win10-11</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">WinPEAS</span><span class="t-desc">Windows privilege escalation checker</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">PowerView</span><span class="t-desc">AD recon and ACL enumeration</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">UACME</span><span class="t-desc">60+ UAC bypass techniques compiled</span></div><span class="t-badge free">FREE</span></div>
+      <div class="t"><div><span class="t-name">Impacket</span><span class="t-desc">Python AD attack suite, DCSync, etc.</span></div><span class="t-badge free">FREE</span></div>
+    </div>
+
+    <hr class="rule-double">
+
+    <div class="phase-block" id="ph7">
+      <div class="phase-head">
+        <div class="phase-num-lg">07</div>
+        <div class="phase-head-right">
+          <div class="phase-tag-sm">// Phase Seven · TA0005</div>
+          <div class="phase-name">Defense Evasion</div>
+          <p class="phase-blurb">This isn't a phase — it's a discipline. Every action from initial access onward must be evaluated through an evasion lens. Stop thinking about it as a step.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <table class="ttp-table">
+            <thead><tr><th>ID</th><th>Technique</th><th>Implementation</th></tr></thead>
+            <tbody>
+              <tr><td class="ttp-id">T1562.006</td><td class="ttp-name">Patch ETW/AMSI</td><td class="ttp-detail">Patch AmsiScanBuffer and EtwEventWrite in memory using direct syscalls. Do this at start of every PS session. One-liners widely available.</td></tr>
+              <tr><td class="ttp-id">T1055.012</td><td class="ttp-name">Process Hollowing</td><td class="ttp-detail">Spawn legit process suspended, hollow memory, inject shellcode, resume. Harder to detect than external injection.</td></tr>
+              <tr><td class="ttp-id">T1027</td><td class="ttp-name">Obfuscation</td><td class="ttp-detail">XOR all strings at compile time. Encrypt config blobs. Stack strings. Use LLVM obfuscation passes. Randomize function names.</td></tr>
+              <tr><td class="ttp-id">T1070</td><td class="ttp-name">Log Tampering</td><td class="ttp-detail">Selectively delete specific Event IDs rather than clearing all logs — full clear is itself an alert. 4624, 4625, 4776 are the priority ones.</td></tr>
+              <tr><td class="ttp-id">T1036</td><td class="ttp-name">Masquerading</td><td class="ttp-detail">Rename tools to match legit processes. Copy file metadata and timestamps from the real binary. Place in legit-looking paths.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div class="op-note">
+            Know your target EDR before you run a single payload. CrowdStrike Falcon, SentinelOne, and Microsoft Defender for Endpoint each have distinct detection logic and different blind spots. Research the product. Find bypass blogs specific to that product version. Test in your lab against the same version they're running. A payload that bypasses Defender will get caught by CrowdStrike in two seconds.
+          </div>
+          <div class="op-note">
+            <strong>Beacon sleep and jitter are underutilized.</strong> Most operators leave defaults (60 seconds, 0% jitter). Elite operators set 45-90 minute intervals with 30-50% jitter for long operations. A beacon that calls home once every hour during business hours generates almost no anomaly detection. Operate slow. Operate quiet. Operate patient.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ██████████████████████████████ PHASES 08-10 ██████████████████████████████ -->
+<div class="page reveal" id="ph8">
+  <div class="phase-block">
+    <div class="phase-head">
+      <div class="phase-num-lg">08</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phase Eight · TA0006</div>
+        <div class="phase-name">Credential Access</div>
+        <p class="phase-blurb">Credentials are the master key in almost every environment. Get them and the network is yours. The techniques that work have barely changed — the detection has.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <table class="ttp-table">
+          <thead><tr><th>ID</th><th>Technique</th><th>2025 Reality</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-id">T1003.001</td><td class="ttp-name">LSASS Memory</td><td class="ttp-detail">Direct LSASS dump is caught by every mature EDR. Use: Nanodump (custom minidump format), indirect dump via SSP, kernel-mode reader, or dump via comsvcs.dll through a LOLBin chain.</td></tr>
+            <tr><td class="ttp-id">T1003.003</td><td class="ttp-name">NTDS.dit</td><td class="ttp-detail">VSS shadow copy + copy NTDS.dit + SYSTEM hive. secretsdump.py extracts all domain hashes offline. Or DCSync if you have replication rights.</td></tr>
+            <tr><td class="ttp-id">T1558.003</td><td class="ttp-name">Kerberoasting</td><td class="ttp-detail">Rubeus kerberoast /outfile:hashes.txt then Hashcat -m 13100. Service accounts with weak passwords. Filter for adminCount=1 first.</td></tr>
+            <tr><td class="ttp-id">T1550.002</td><td class="ttp-name">Pass-the-Hash</td><td class="ttp-detail">NTLM hash from LSASS → authenticate to other systems without cracking. CrackMapExec/NetExec for mass validation across the subnet.</td></tr>
+            <tr><td class="ttp-id">T1555</td><td class="ttp-name">Password Stores</td><td class="ttp-detail">Chrome passwords via SharpChrome. Windows Credential Manager via SharpDPAPI. KeePass databases — find them on shares, keylog the master password.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="op-note">
+          <strong>DCSync is the cleanest DA-to-all-hashes path.</strong> Requires DS-Replication-Get-Changes and DS-Replication-Get-Changes-All. Once you have those rights (often via GenericAll on the domain), you never need to touch a DC disk. secretsdump.py -just-dc handles the rest. Golden Ticket (krbtgt hash) gives you 10-year domain persistence — survives password resets on every account except krbtgt itself.
+        </div>
+
+        <div class="toolbox-label" style="margin-top:24px;">// CREDENTIAL ACCESS TOOLKIT</div>
+        <div class="tool-row">
+          <div class="t"><div><span class="t-name">Mimikatz</span><span class="t-desc">The original — use offline on dumps now</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">Nanodump</span><span class="t-desc">Stealthy custom minidump format</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">Rubeus</span><span class="t-desc">Kerberos ticket operations</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">Hashcat</span><span class="t-desc">GPU-accelerated hash cracking</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">SharpDPAPI</span><span class="t-desc">DPAPI decryption, browser creds</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">NetExec (nxc)</span><span class="t-desc">Mass PtH validation across network</span></div><span class="t-badge free">FREE</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule-double">
+
+  <div class="phase-block" id="ph9">
+    <div class="phase-head">
+      <div class="phase-num-lg">09</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phase Nine · TA0007</div>
+        <div class="phase-name">Internal Discovery</div>
+        <p class="phase-blurb">Once inside, build your picture of the environment before moving. Rushing lateral movement without discovery is how operators miss the faster path to their objective.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <table class="ttp-table">
+          <thead><tr><th>ID</th><th>Technique</th><th>What to Collect</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-id">T1082</td><td class="ttp-name">System Info</td><td class="ttp-detail">OS version, patch level, AV/EDR products, domain joined status. Determine if you need to escalate before moving.</td></tr>
+            <tr><td class="ttp-id">T1083</td><td class="ttp-name">File Discovery</td><td class="ttp-detail">Search: *.kdbx, *password*, *credential*, *vpn*, *.pfx, *.p12, *.rdp, *.config. Snaffler does this across all accessible shares.</td></tr>
+            <tr><td class="ttp-id">T1087</td><td class="ttp-name">Account Discovery</td><td class="ttp-detail">All domain users, admins, service accounts, privileged groups. Filter for adminCount=1. BloodHound imports all of this from SharpHound.</td></tr>
+            <tr><td class="ttp-id">T1018</td><td class="ttp-name">Network Discovery</td><td class="ttp-detail">ARP sweep, ping sweep, port scan internal ranges. Use from the implant — don't RDP to a server and scan from there visibly.</td></tr>
+            <tr><td class="ttp-id">T1016</td><td class="ttp-name">Network Config</td><td class="ttp-detail">Routing tables, DNS servers, internal DNS zones, DHCP servers. This tells you network segmentation and pivot paths.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="op-note">
+          <strong>Run BloodHound within 10 minutes of getting domain credentials.</strong> SharpHound collection takes 2-5 minutes. Import the ZIP. Run "Shortest Path to Domain Admins" first. Then "Find Kerberoastable Users with High Value Targets." The graph will show you a path in 90% of environments. Then look for "Users with DCSync Rights" — you'll often find one you can reach without going through Domain Admin.
+        </div>
+
+        <div class="toolbox-label" style="margin-top:24px;">// DISCOVERY TOOLKIT</div>
+        <div class="tool-row">
+          <div class="t"><div><span class="t-name">BloodHound / SharpHound</span><span class="t-desc">AD attack path visualization</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">Snaffler</span><span class="t-desc">Sensitive file finder across shares</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">Seatbelt</span><span class="t-desc">Host security posture survey</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">PowerView</span><span class="t-desc">AD enumeration via PowerShell</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">AzureHound</span><span class="t-desc">BloodHound collector for Azure AD</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">CloudFox</span><span class="t-desc">Multi-cloud attack surface enumeration</span></div><span class="t-badge free">FREE</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule-double">
+
+  <div class="phase-block" id="ph10">
+    <div class="phase-head">
+      <div class="phase-num-lg">10</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phase Ten · TA0008</div>
+        <div class="phase-name">Lateral Movement</div>
+        <p class="phase-blurb">Traversing the network with purpose. Every hop should be deliberate and planned. Noisy lateral movement triggers behavioral analytics almost immediately.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <table class="ttp-table">
+          <thead><tr><th>ID</th><th>Technique</th><th>Detection Profile</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-id">T1550.002</td><td class="ttp-name">Pass-the-Hash</td><td class="ttp-detail">Medium detection. Creates Type 3 logon events. Noisy across many hosts. Use targeted, not mass. Combine with NetExec for targeted validation.</td></tr>
+            <tr><td class="ttp-id">T1021.006</td><td class="ttp-name">WinRM</td><td class="ttp-detail">Low-medium detection. Evil-WinRM with stolen creds. Port 5985/5986. Creates WinRM logon events but less correlated than SMB.</td></tr>
+            <tr><td class="ttp-id">T1021.003</td><td class="ttp-name">DCOM</td><td class="ttp-detail">Low detection. MMC20.Application and ShellWindows DCOM objects for remote execution. Very few orgs monitor DCOM execution events.</td></tr>
+            <tr><td class="ttp-id">T1021.002</td><td class="ttp-name">SMB Admin Shares</td><td class="ttp-detail">High detection in mature envs. EventID 7045 (service install). Use only if necessary. wmiexec is better. Avoid PsExec in any mature SOC.</td></tr>
+            <tr><td class="ttp-id">T1550.003</td><td class="ttp-name">Pass-the-Ticket</td><td class="ttp-detail">Import Kerberos TGT and authenticate as another user. No NTLM at all. Evades PtH detections. Needs Rubeus ptt command.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="op-note">
+          <strong>wmiexec.py is your daily driver for lateral movement</strong> when PsExec is too loud. It uses WMI, writes nothing to disk, and creates minimal log events. The syntax:<br><br>
+          <span class="font-mono" style="font-size:11px; color:var(--red2); display:block; margin-top:8px;">impacket-wmiexec DOMAIN/user:pass@target</span>
+          <br>
+          For stealth over time, consider P2P beacons over SMB — spin up a beacon on the target that connects back to your already-implanted system rather than directly to C2. This keeps external callback count low and blends with normal SMB traffic.
+        </div>
+
+        <div class="toolbox-label" style="margin-top:24px;">// LATERAL MOVEMENT TOOLKIT</div>
+        <div class="tool-row">
+          <div class="t"><div><span class="t-name">Impacket Suite</span><span class="t-desc">wmiexec, smbexec, atexec, psexec</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">Evil-WinRM</span><span class="t-desc">WinRM shell with upload/download</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">NetExec (nxc)</span><span class="t-desc">CME successor, mass execution</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t"><div><span class="t-name">SCShell</span><span class="t-desc">Fileless lateral movement via SCM</span></div><span class="t-badge free">FREE</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ██████████████████████████████ PHASES 11-15 ██████████████████████████████ -->
+<div class="page reveal" id="ph11">
+  <div class="phase-block">
+    <div class="phase-head">
+      <div class="phase-num-lg">11–15</div>
+      <div class="phase-head-right">
+        <div class="phase-tag-sm">// Phases Eleven through Fifteen</div>
+        <div class="phase-name">Collection → Report</div>
+        <p class="phase-blurb">The end game: collecting evidence, maintaining C2, exfiltrating data, demonstrating impact, and turning it all into a document that actually changes something.</p>
+      </div>
+    </div>
+
+    <div class="three-col">
+      <div>
+        <h3 class="sub-head">Collection (11)</h3>
+        <table class="ttp-table">
+          <thead><tr><th>Target</th><th>Method</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-name">SharePoint / Confluence</td><td class="ttp-detail">Search for "password", "VPN", "AWS", "production creds". These hit on almost every engagement.</td></tr>
+            <tr><td class="ttp-name">Email (Exchange/O365)</td><td class="ttp-detail">MailSniper or Graph API (TokenTactics). Target C-suite and IT mailboxes. Automated email rules for persistence.</td></tr>
+            <tr><td class="ttp-name">Network Shares</td><td class="ttp-detail">Snaffler across all accessible UNC paths. Prioritize IT shares, HR shares, Finance shares.</td></tr>
+            <tr><td class="ttp-name">Cloud Storage</td><td class="ttp-detail">GraphRunner for M365. AWS S3 listing with stolen keys. Enumerate all storage accounts in scope.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h3 class="sub-head">C2 Architecture (12)</h3>
+        <table class="ttp-table">
+          <thead><tr><th>Component</th><th>Best Practice</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-name">Protocol</td><td class="ttp-detail">HTTPS primary. DNS backup. Both through redirectors. Never expose real C2 IP.</td></tr>
+            <tr><td class="ttp-name">Profile</td><td class="ttp-detail">Malleable C2 profile mimicking Teams, Slack, or OneDrive API traffic. Customize every HTTP header.</td></tr>
+            <tr><td class="ttp-name">Redundancy</td><td class="ttp-detail">Two C2 channels. If HTTPS gets blocked, DNS activates. P2P beacons for isolated segments.</td></tr>
+            <tr><td class="ttp-name">Staging</td><td class="ttp-detail">Redirectors in front of everything. Nginx rules: valid callbacks → C2, everything else → benign site.</td></tr>
+          </tbody>
+        </table>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+          <div class="t" style="flex:1;min-width:100px;"><div><span class="t-name">Cobalt Strike</span><span class="t-desc">Malleable C2</span></div><span class="t-badge paid">PAID</span></div>
+          <div class="t" style="flex:1;min-width:100px;"><div><span class="t-name">Havoc C2</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t" style="flex:1;min-width:100px;"><div><span class="t-name">Sliver</span></div><span class="t-badge free">FREE</span></div>
+          <div class="t" style="flex:1;min-width:100px;"><div><span class="t-name">Mythic</span></div><span class="t-badge free">FREE</span></div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="sub-head">Exfil & Impact (13-14)</h3>
+        <table class="ttp-table">
+          <thead><tr><th>Method</th><th>Details</th></tr></thead>
+          <tbody>
+            <tr><td class="ttp-name">rclone + Cloud</td><td class="ttp-detail">Sync to attacker-controlled Mega/SFTP via rclone. Encrypted, looks like legitimate cloud sync traffic.</td></tr>
+            <tr><td class="ttp-name">DNS Tunneling</td><td class="ttp-detail">Dnscat2 or iodine. Slow but bypasses most egress filters. Use for environments that block HTTPS egress.</td></tr>
+            <tr><td class="ttp-name">Impact Demo</td><td class="ttp-detail">Never encrypt production data. Create a test directory, encrypt contents, document. Screenshot proves capability.</td></tr>
+            <tr><td class="ttp-name">Proof of Access</td><td class="ttp-detail">Screenshot of defined crown jewel. DA certificate. Access to specific system. Timestamp in screenshot.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr class="rule-double">
+
+    <div class="phase-block" id="ph15">
+      <div class="phase-head">
+        <div class="phase-num-lg">15</div>
+        <div class="phase-head-right">
+          <div class="phase-tag-sm">// Phase Fifteen · POST-ENGAGEMENT</div>
+          <div class="phase-name">Reporting & Debrief</div>
+          <p class="phase-blurb">The report is the product. The hack is just how you gather data for it. An operator who can't write is only half useful to a client.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <h3 class="sub-head">Report Structure</h3>
+          <table class="ttp-table">
+            <thead><tr><th>Section</th><th>What Goes In It</th></tr></thead>
+            <tbody>
+              <tr><td class="ttp-name">Executive Summary</td><td class="ttp-detail">1-2 pages. Non-technical. What happened, what was reached, dwell time, overall risk rating. Your CISO should understand every word.</td></tr>
+              <tr><td class="ttp-name">Attack Narrative</td><td class="ttp-detail">Chronological story. How you got in, what you found, how you moved, what you reached. Write like a crime novel, not a log file.</td></tr>
+              <tr><td class="ttp-name">Findings</td><td class="ttp-detail">Each finding: title, CVSS score, affected systems, evidence screenshot, business impact statement, remediation with specific steps.</td></tr>
+              <tr><td class="ttp-name">ATT&CK Heatmap</td><td class="ttp-detail">ATT&CK Navigator with all TTPs highlighted. Shows Blue Team exactly where their detection coverage gaps are.</td></tr>
+              <tr><td class="ttp-name">Remediation Roadmap</td><td class="ttp-detail">Prioritized list. Critical (30 days), High (90 days), Medium (6 months). Attach effort estimate and expected risk reduction.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3 class="sub-head">Pre-Report Checklist</h3>
+          <ul class="checklist">
+            <li>All operator timestamps logged and organized by action</li>
+            <li>Every persistence mechanism cleaned up and documented</li>
+            <li>All created accounts removed and listed in appendix</li>
+            <li>Credentials captured listed (hashed, not plaintext in report)</li>
+            <li>Attack path diagram built in draw.io or equivalent</li>
+            <li>MITRE ATT&CK Navigator heatmap exported</li>
+            <li>Every finding has at least one screenshot as evidence</li>
+            <li>Business impact written for non-technical audience</li>
+            <li>Remediation steps reviewed for accuracy by technical operator</li>
+            <li>Executive summary reviewed by someone who isn't technical</li>
+            <li>All captured sensitive data (PII, creds) destroyed per policy</li>
+            <li>Debrief scheduled within 5 business days of report delivery</li>
+          </ul>
+
+          <div class="toolbox-label" style="margin-top:24px;">// REPORTING TOOLS</div>
+          <div class="tool-row">
+            <div class="t"><div><span class="t-name">Ghostwriter</span><span class="t-desc">Full red team report platform</span></div><span class="t-badge free">FREE</span></div>
+            <div class="t"><div><span class="t-name">Pwndoc</span><span class="t-desc">Open-source report generator</span></div><span class="t-badge free">FREE</span></div>
+            <div class="t"><div><span class="t-name">ATT&CK Navigator</span><span class="t-desc">TTP heatmap, export-ready</span></div><span class="t-badge free">FREE</span></div>
+            <div class="t"><div><span class="t-name">PlexTrac</span><span class="t-desc">Enterprise report platform</span></div><span class="t-badge paid">PAID</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ██████████████████████████████ A–Z GUIDE ██████████████████████████████ -->
+<div class="az-section reveal" id="az">
+  <div class="section-eyebrow">A to Z</div>
+  <h2 class="section-title">The Operator's Encyclopedia</h2>
+  <p class="section-desc">
+    The concepts, mindsets, techniques, and hard-won lessons that don't fit neatly into a phase checklist. Read these when you're stuck, when you're bored, or when you want to think like a real operator instead of following a recipe.
+  </p>
+
+  <div class="az-grid">
+
+    <!-- A -->
+    <div class="az-entry">
+      <div class="az-letter">A</div>
+      <div class="az-head">Active Directory</div>
+      <div class="az-sub">The Domain You Actually Own</div>
+      <div class="az-body">
+        AD is present in nearly every enterprise and it is almost always misconfigured. Not slightly — embarrassingly. The average domain has Kerberoastable service accounts with weak passwords, ADCS misconfigs that allow any user to get a DA certificate, excessive ACL permissions granted years ago and never reviewed, and at least one account with DCSync rights that nobody remembers adding.<br><br>
+        <strong>Your first hour in a domain should always go the same way:</strong> run SharpHound, import to BloodHound, run the four attack path queries, check Certipy for ADCS issues, and look at what groups your current user belongs to. You will find a path. Always.
+      </div>
+      <div class="az-tools"><span class="az-tool">BloodHound</span><span class="az-tool">SharpHound</span><span class="az-tool">Certipy</span><span class="az-tool">PowerView</span><span class="az-tool">Rubeus</span></div>
+      <div class="az-verdict">In 12 years of red teaming, I have never failed to get Domain Admin in an Active Directory environment. Not once. The only variable is how long it takes. — Senior RT Operator</div>
+    </div>
+
+    <!-- B -->
+    <div class="az-entry">
+      <div class="az-letter">B</div>
+      <div class="az-head">BloodHound</div>
+      <div class="az-sub">God Mode for Active Directory</div>
+      <div class="az-body">
+        BloodHound changed red teaming permanently when it was released. Before it, operators spent days manually enumerating AD relationships. Now SharpHound collects in minutes and the graph answers questions that would have taken a week to answer manually.<br><br>
+        <strong>The attack paths that consistently produce results:</strong> "Shortest Path to Domain Admins", "Find AS-REP Roastable Users", "Find Kerberoastable High Value Targets", "Users with Foreign Domain Group Membership", and "Shortest Paths to Unconstrained Delegation Systems." Run all of them. Every time. The Community Edition (CE) is now the maintained fork — use that, not the old version.
+      </div>
+      <div class="az-tools"><span class="az-tool">BloodHound CE</span><span class="az-tool">SharpHound</span><span class="az-tool">AzureHound</span><span class="az-tool">PlumHound</span></div>
+      <div class="az-verdict">If you're not running BloodHound within 15 minutes of getting domain creds, you're doing extra manual work for no reason.</div>
+    </div>
+
+    <!-- C -->
+    <div class="az-entry">
+      <div class="az-letter">C</div>
+      <div class="az-head">C2 Profile Design</div>
+      <div class="az-sub">The Art of the Invisible Channel</div>
+      <div class="az-body">
+        Default C2 frameworks are caught immediately by mature SOCs. A default Cobalt Strike installation has been fingerprinted so thoroughly that Defenders have Sigma rules, Suricata rules, and YARA rules specifically for it.<br><br>
+        <strong>What makes a good C2 profile:</strong> It mimics a real application's traffic patterns exactly. Not just the headers — the timing, the packet sizes, the response structure, the error behavior. Mimic Microsoft Graph API, Slack, Dropbox, or another SaaS your target uses daily. The Blue Team can't block it without blocking the real service. Customize every HTTP header, the User-Agent, the URI paths, the response content. Make the server return real-looking JSON even if it's garbage to the human eye.
+      </div>
+      <div class="az-tools"><span class="az-tool">Cobalt Strike + Malleable C2</span><span class="az-tool">Havoc</span><span class="az-tool">Sliver</span><span class="az-tool">C2concealer</span></div>
+      <div class="az-verdict">A good C2 profile took you 6 hours to build. That 6 hours buys you weeks of undetected operation. Budget for it.</div>
+    </div>
+
+    <!-- D -->
+    <div class="az-entry">
+      <div class="az-letter">D</div>
+      <div class="az-head">DCSync</div>
+      <div class="az-sub">Domain Compromise Without Touching a DC</div>
+      <div class="az-body">
+        DCSync is the technique where you impersonate a domain controller's replication process to pull password hashes from the real DC. You need DS-Replication-Get-Changes and DS-Replication-Get-Changes-All rights — which are granted to Domain Admins by default, but are also sometimes granted to other accounts or groups by overzealous admins.<br><br>
+        <strong>The workflow:</strong> Find an account with DCSync rights via BloodHound → escalate to that account → run secretsdump.py or Mimikatz lsadump::dcsync → extract krbtgt hash → forge Golden Ticket → game over. The krbtgt hash gives you 10-year Kerberos ticket validity. Even if every password in the domain gets reset, your Golden Ticket still works until krbtgt is rotated twice.
+      </div>
+      <div class="az-tools"><span class="az-tool">secretsdump.py</span><span class="az-tool">Mimikatz (lsadump::dcsync)</span><span class="az-tool">Rubeus (Golden Ticket)</span></div>
+      <div class="az-verdict">DCSync is so clean it should be illegal. It leaves almost no trace, requires no disk access on the DC, and gives you everything.</div>
+    </div>
+
+    <!-- E -->
+    <div class="az-entry">
+      <div class="az-letter">E</div>
+      <div class="az-head">EDR Bypass Mindset</div>
+      <div class="az-sub">Don't Fight It — Route Around It</div>
+      <div class="az-body">
+        Most junior operators treat EDR bypass as a puzzle to solve once. Senior operators understand it's a continuous arms race and approach it as a research problem, not a tooling problem.<br><br>
+        <strong>The methodology that works:</strong> Identify the exact EDR product and version. Set up a lab VM with the same product. Understand how that specific EDR instruments the OS — which kernel callbacks it registers, which API calls it hooks, which ETW providers it consumes. Then find the gaps in that specific instrumentation. CrowdStrike has different blind spots than SentinelOne. Understanding the product matters more than having the right tool.
+      </div>
+      <div class="az-tools"><span class="az-tool">SysWhispers3</span><span class="az-tool">ThreatCheck</span><span class="az-tool">Scarecrow</span><span class="az-tool">Freeze</span><span class="az-tool">PPLdump</span></div>
+      <div class="az-verdict">The operator who understands how EDR works wins. The one who just runs tools loses eventually.</div>
+    </div>
+
+    <!-- F -->
+    <div class="az-entry">
+      <div class="az-letter">F</div>
+      <div class="az-head">Fileless Operation</div>
+      <div class="az-sub">Living Entirely in Memory</div>
+      <div class="az-body">
+        Fileless doesn't mean no files ever touch disk — it means your primary payload execution chain avoids writing to disk. Reflective DLL injection, process hollowing, PowerShell entirely in memory, Beacon Object Files running inside an existing process — all of these leave minimal or no disk artifacts.<br><br>
+        <strong>The principle:</strong> Your implant should live in the memory of a legitimate process. Your tools should execute inside that implant's memory space. Data should be processed in memory and streamed out. Avoid staging files on disk. If you must write to disk, write to a path that isn't monitored (%APPDATA%, temp folders), use timestomping, and clean up immediately.
+      </div>
+      <div class="az-tools"><span class="az-tool">BOF Framework</span><span class="az-tool">Donut</span><span class="az-tool">Inject-Assembly</span><span class="az-tool">PowerShell (AMSI bypassed)</span></div>
+      <div class="az-verdict">The best artifact is no artifact. The best evidence is no evidence. Operate in memory wherever possible.</div>
+    </div>
+
+    <!-- G -->
+    <div class="az-entry">
+      <div class="az-letter">G</div>
+      <div class="az-head">Golden Ticket</div>
+      <div class="az-sub">The Skeleton Key That Never Expires</div>
+      <div class="az-body">
+        A Golden Ticket is a forged Kerberos Ticket Granting Ticket (TGT) signed with the domain's krbtgt account hash. Because Kerberos validates tickets using that hash, and because you control the hash, you can forge a ticket for any user, any group membership, and any expiry time you want — up to 10 years.<br><br>
+        <strong>What makes it powerful:</strong> Password resets for regular accounts don't invalidate a Golden Ticket. The only remediation is rotating krbtgt twice with a gap in between — which most orgs do not know how to do correctly, and which causes significant disruption. This is why you document access, don't leave Golden Tickets running in production engagements, and clean up after yourself.
+      </div>
+      <div class="az-tools"><span class="az-tool">Mimikatz (kerberos::golden)</span><span class="az-tool">Rubeus (golden)</span><span class="az-tool">Impacket (ticketer.py)</span></div>
+      <div class="az-verdict">Getting the krbtgt hash is the end of the engagement. Everything after that is cleanup and documentation.</div>
+    </div>
+
+    <!-- H -->
+    <div class="az-entry">
+      <div class="az-letter">H</div>
+      <div class="az-head">HTML Smuggling</div>
+      <div class="az-sub">The Technique That Broke Email Gateways</div>
+      <div class="az-body">
+        HTML Smuggling builds the malicious payload client-side inside a browser using JavaScript. The email gateway sees an HTML attachment containing JavaScript — no embedded file, no obvious payload. The browser executes the JS, assembles a Blob(), and triggers a download of the assembled file directly from memory.<br><br>
+        <strong>Why it still works in 2025:</strong> Most email gateways can't execute JavaScript in sandboxes at scale. The payload is assembled after delivery. Combine with an ISO container (bypasses MOTW on unpatched systems) or a LNK file pointing to a PowerShell loader for a complete, gate-bypassing delivery chain. Defender SmartScreen increasingly flags LNKs — test your specific target's config.
+      </div>
+      <div class="az-tools"><span class="az-tool">Custom HTML templates</span><span class="az-tool">Demiguise</span><span class="az-tool">GadgetToJScript</span></div>
+      <div class="az-verdict">The day this stops working, something else will take its place. The delivery mechanism changes; the principle — reassemble on the client side — stays the same.</div>
+    </div>
+
+    <!-- I -->
+    <div class="az-entry">
+      <div class="az-letter">I</div>
+      <div class="az-head">Implant Architecture</div>
+      <div class="az-sub">Design Your Agent Like You Design Software</div>
+      <div class="az-body">
+        Most operators grab an off-the-shelf agent and use it as-is. Elite operators think about their implant the way a software engineer thinks about a production system: what happens when it crashes? What happens if C2 goes down? How does it reconnect? How does it fail safely?<br><br>
+        <strong>Design considerations for mature engagements:</strong> Primary + fallback C2 channels. Sleep with jitter. Anti-sandbox checks before any callback. Environment validation (domain joined? specific user logged in?). Automatic self-deletion after X days of no contact. These aren't luxuries — they're the difference between a one-week engagement and a three-month simulation.
+      </div>
+      <div class="az-tools"><span class="az-tool">Cobalt Strike (BOFs)</span><span class="az-tool">Havoc (Demon)</span><span class="az-tool">Sliver (multiplex)</span><span class="az-tool">Custom Nim/Rust loaders</span></div>
+      <div class="az-verdict">Your implant is your presence in the environment. A flaky implant means a flaky operation.</div>
+    </div>
+
+    <!-- J -->
+    <div class="az-entry">
+      <div class="az-letter">J</div>
+      <div class="az-head">Jump Hosts & Pivoting</div>
+      <div class="az-sub">Hopping Through Segmented Networks</div>
+      <div class="az-body">
+        Network segmentation is the defense. Pivoting is the offense. Every time you move through a compromised system to reach the next network segment, you're pivoting. Done well, your C2 traffic never crosses the firewall directly — it flows through systems already inside the perimeter.<br><br>
+        <strong>Pivot techniques that work:</strong> SOCKS proxy through your beacon (Cobalt Strike socks5, Sliver socks5 server), SSH tunneling via compromised Linux hosts, Ligolo-ng for full layer-3 tunneling through implants. For isolated segments with no internet access at all: P2P beacons over SMB that daisy-chain back to an internet-connected host. Draw your network topology as you discover it — pivoting without a map gets messy fast.
+      </div>
+      <div class="az-tools"><span class="az-tool">Ligolo-ng</span><span class="az-tool">Chisel</span><span class="az-tool">CS SOCKS Proxy</span><span class="az-tool">SSH tunnels</span><span class="az-tool">frp</span></div>
+      <div class="az-verdict">Segmentation only stops operators who don't know how to pivot. Learn to pivot and segmentation becomes a speed bump.</div>
+    </div>
+
+    <!-- K -->
+    <div class="az-entry">
+      <div class="az-letter">K</div>
+      <div class="az-head">Kerberoasting</div>
+      <div class="az-sub">The Gift That Keeps Giving</div>
+      <div class="az-body">
+        Kerberoasting has been a known attack since 2014. It still works in 2025 because organizations still run service accounts with weak passwords and high privileges. Any domain user can request a service ticket for any SPN. That ticket is encrypted with the service account's password hash. Take it offline and crack it.<br><br>
+        <strong>Prioritization matters:</strong> Don't Kerberoast everything and hope. Filter for service accounts that are members of privileged groups (adminCount=1, Domain Admins, Server Operators). Those are the ones worth cracking. Use hashcat with a targeted wordlist: rockyou.txt + company-specific words + common service account patterns (Service2023!, CompanyName123). Service accounts often haven't had their password changed in years.
+      </div>
+      <div class="az-tools"><span class="az-tool">Rubeus (kerberoast)</span><span class="az-tool">GetUserSPNs.py</span><span class="az-tool">Hashcat (-m 13100)</span><span class="az-tool">BloodHound (find targets)</span></div>
+      <div class="az-verdict">Every single domain has Kerberoastable accounts. The question is whether any of them have weak passwords and high privilege. Usually yes.</div>
+    </div>
+
+    <!-- L -->
+    <div class="az-entry">
+      <div class="az-letter">L</div>
+      <div class="az-head">LSASS Without Getting Caught</div>
+      <div class="az-sub">The Goldmine and the Minefield</div>
+      <div class="az-body">
+        LSASS contains the credentials for every user logged into the system. It's also the most monitored process in Windows. Direct dumping with ProcDump, Task Manager, or even comsvcs.dll triggers immediate alerts in any EDR worth its license fee.<br><br>
+        <strong>What actually works in 2025:</strong> Nanodump creates a custom minidump format that doesn't match known signatures. Indirect LSASS dumping via a custom NTDLL handle that doesn't go through the hooked APIs. SSP injection registers a custom Security Support Provider that receives credentials as they're used. Kernel-mode dumpers that read LSASS from kernel space, bypassing all user-mode hooks. Each of these requires a different level of sophistication — pick the one that matches your target's security maturity.
+      </div>
+      <div class="az-tools"><span class="az-tool">Nanodump</span><span class="az-tool">HandleKatz</span><span class="az-tool">PPLBlade</span><span class="az-tool">Mimikatz (offline)</span></div>
+      <div class="az-verdict">Direct LSASS dump is a rookie move in 2025. If your EDR doesn't catch it, your target doesn't have a real EDR.</div>
+    </div>
+
+    <!-- M -->
+    <div class="az-entry">
+      <div class="az-letter">M</div>
+      <div class="az-head">MFA — It's Not a Hard Stop</div>
+      <div class="az-sub">Every MFA Implementation Has a Gap</div>
+      <div class="az-body">
+        Multi-factor authentication stops password stuffing. It does not stop a determined operator. Every MFA implementation has attack surfaces: push notification fatigue (bomb the user until they approve), adversary-in-the-middle proxy that captures the session token after MFA (Evilginx), voice phishing to the helpdesk, SIM swapping for SMS-based MFA, or legacy authentication protocols that bypass MFA entirely (NTLM, basic auth on old endpoints).<br><br>
+        <strong>The MFA fatigue workflow that consistently works:</strong> Spray until you have valid credentials. Start sending push notifications repeatedly — 20 to 30 in a row. Then call the target impersonating IT, tell them there's been unusual activity and you need them to approve one more notification to confirm their identity. Approval rate in tested environments: around 60%.
+      </div>
+      <div class="az-tools"><span class="az-tool">Evilginx 3</span><span class="az-tool">MFASweep</span><span class="az-tool">o365spray</span><span class="az-tool">AADInternals</span></div>
+      <div class="az-verdict">When a client says "we have MFA on everything so we're fine" — that's when you start looking for legacy auth endpoints.</div>
+    </div>
+
+    <!-- N -->
+    <div class="az-entry">
+      <div class="az-letter">N</div>
+      <div class="az-head">NTLM Relay</div>
+      <div class="az-sub">The Protocol Vulnerability That Never Dies</div>
+      <div class="az-body">
+        NTLM relay attacks have existed for over two decades. They still work because NTLM is still used everywhere — on internal network paths, printer protocols, file server communication, and SMB shares. When a system tries to authenticate to your controlled listener using NTLM, you can relay that authentication to a real service and authenticate as that user.<br><br>
+        <strong>The modern attack chain:</strong> Responder to capture NTLM challenges on the LAN → ntlmrelayx.py to relay to targets without SMB signing → dump SAM database or get a shell. With MS-EFSRPC or PrinterBug you can coerce authentication from specific machines including Domain Controllers. Relay a DC's machine account to another DC over LDAP → add yourself to Domain Admins. This chain compromises fully patched environments with no CVE exploitation needed.
+      </div>
+      <div class="az-tools"><span class="az-tool">Responder</span><span class="az-tool">ntlmrelayx.py</span><span class="az-tool">PetitPotam</span><span class="az-tool">PrinterBug</span><span class="az-tool">mitm6</span></div>
+      <div class="az-verdict">NTLM relay is the attack that never ages. As long as SMB signing isn't enforced network-wide, it works.</div>
+    </div>
+
+    <!-- O -->
+    <div class="az-entry">
+      <div class="az-letter">O</div>
+      <div class="az-head">OPSEC</div>
+      <div class="az-sub">The Discipline That Keeps You Employed</div>
+      <div class="az-body">
+        Operational Security isn't a checklist item — it's a mindset that governs every decision during an engagement. Your personal IP address should never appear in target logs. Your personal identity should never be associated with attacker infrastructure. Your real C2 server should never be reachable from the open internet without going through redirectors first.<br><br>
+        <strong>OPSEC failures that ended real engagements:</strong> Using a personal email to register a domain. Letting your home IP slip through a VPN gap into target logs. Using the same tool binary across multiple engagements (same file hash). Running recon from the same IP you use for C2. Posting about the engagement on social media. Forgetting to clean up your operator notes in a file you staged on target. Think like someone will forensically analyze everything you touch. Because if the engagement goes wrong, they will.
+      </div>
+      <div class="az-tools"><span class="az-tool">Dedicated VMs</span><span class="az-tool">Mullvad VPN</span><span class="az-tool">Signal</span><span class="az-tool">Protonmail</span><span class="az-tool">Separate hardware</span></div>
+      <div class="az-verdict">OPSEC failures don't just burn the engagement. They can burn your reputation, your company, and in some cases your freedom.</div>
+    </div>
+
+    <!-- P -->
+    <div class="az-entry">
+      <div class="az-letter">P</div>
+      <div class="az-head">Phishing in 2025</div>
+      <div class="az-sub">Still Number One. Always Number One.</div>
+      <div class="az-body">
+        People keep waiting for phishing to stop working. It won't. The reason it stays at the top of initial access statistics year after year is that it targets the hardest problem in security: human judgment under time pressure. Training helps at the margins. It never eliminates the attack surface.<br><br>
+        <strong>What's working right now:</strong> Business email compromise with high-context lures (reference real projects from LinkedIn), QR code phishing that bypasses URL scanning (phone cameras open the URL in a mobile browser with different security posture), HTML smuggling with DocuSign/SharePoint lures, and callback phishing (the target calls a fake IT number and gets socially engineered over the phone). The highest-performing campaigns have one thing in common: they look exactly like something the target was already expecting to receive.
+      </div>
+      <div class="az-tools"><span class="az-tool">Evilginx 3</span><span class="az-tool">GoPhish</span><span class="az-tool">King Phisher</span><span class="az-tool">Modlishka</span><span class="az-tool">EvilnoVNC</span></div>
+      <div class="az-verdict">The best phish is one the target wanted to receive. Do your OSINT. Write a lure that makes sense for that specific person.</div>
+    </div>
+
+    <!-- Q -->
+    <div class="az-entry">
+      <div class="az-letter">Q</div>
+      <div class="az-head">Quick Wins</div>
+      <div class="az-sub">What to Look for in the First 30 Minutes</div>
+      <div class="az-body">
+        When you get your first foothold, there's a sequence of fast checks that frequently produce immediate escalation without any exploitation at all. Run these before anything else:<br><br>
+        <strong>The 30-minute checklist:</strong> (1) What groups is this user in? Check for unexpected privileged group membership. (2) Are there any GPP passwords in SYSVOL? (3) Is AlwaysInstallElevated enabled? (4) Any writable service binary paths? (5) What network shares are accessible — run Snaffler. (6) Is SMB signing disabled network-wide? (7) Are there any ADCS templates with ESC1 misconfigs? (8) Which users have Kerberos pre-auth disabled? Most of these checks take under 5 minutes and frequently produce immediate domain compromise.
+      </div>
+      <div class="az-tools"><span class="az-tool">WinPEAS</span><span class="az-tool">PowerUp</span><span class="az-tool">Snaffler</span><span class="az-tool">Certipy</span><span class="az-tool">Rubeus</span></div>
+      <div class="az-verdict">Slow down and run quick checks first. The most embarrassing path to DA is the one that was sitting there in the first 10 minutes and you missed it because you rushed.</div>
+    </div>
+
+    <!-- R -->
+    <div class="az-entry">
+      <div class="az-letter">R</div>
+      <div class="az-head">Redirectors</div>
+      <div class="az-sub">The Infrastructure That Keeps You Alive</div>
+      <div class="az-body">
+        A redirector is a VPS server that sits between the target and your C2. When the Blue Team inevitably investigates your C2 traffic, they find the redirector IP — not your C2 server. The redirector forwards valid C2 callbacks to the real C2 and redirects everything else (sandbox analysis, SOC investigation) to an innocent website.<br><br>
+        <strong>The correct setup:</strong> Redirector runs Nginx with a specific Allowlist rule — only requests with your exact C2 profile URI and User-Agent get proxied to C2. Everything else gets a 301 to a real website. The C2 server firewall only accepts connections from the redirector IPs. The C2 server has no domain name. If the redirector gets burned, you spin up a new one and the C2 server lives on. Build at least two redirectors per engagement — one HTTPS, one DNS.
+      </div>
+      <div class="az-tools"><span class="az-tool">Nginx (mod_rewrite)</span><span class="az-tool">Apache</span><span class="az-tool">socat</span><span class="az-tool">DigitalOcean/Vultr VPS</span><span class="az-tool">Cloudflare Workers</span></div>
+      <div class="az-verdict">Your C2 IP getting burned ends the engagement. Your redirector IP getting burned costs you $6 for a new VPS. Always use redirectors.</div>
+    </div>
+
+    <!-- S -->
+    <div class="az-entry">
+      <div class="az-letter">S</div>
+      <div class="az-head">Syscalls</div>
+      <div class="az-sub">Bypassing EDR at the Lowest Layer</div>
+      <div class="az-body">
+        EDR products instrument Windows by hooking NTDLL functions in user-mode. When your code calls NtAllocateVirtualMemory, the EDR intercepts that call, inspects it, decides if it's malicious, then (usually) passes it to the kernel. Hooking is how EDR sees what you're doing.<br><br>
+        <strong>Direct syscalls bypass this entirely.</strong> Instead of calling through NTDLL (where hooks live), you call the kernel directly using the raw syscall instruction with the correct System Service Number (SSN). SysWhispers3 generates the stubs automatically. No NTDLL, no hooks, no EDR visibility. The counter to this is kernel-mode EDR with PatchGuard-bypass capabilities — which exist, but are rarer. Indirect syscalls (call through legitimate NTDLL code that eventually hits the syscall) are the next layer when direct syscalls get caught.
+      </div>
+      <div class="az-tools"><span class="az-tool">SysWhispers3</span><span class="az-tool">HellsGate</span><span class="az-tool">HalosGate</span><span class="az-tool">RecycledGate</span></div>
+      <div class="az-verdict">If you don't understand how NTDLL hooking works, you can't reliably bypass it. Read the internals before you use the tools.</div>
+    </div>
+
+    <!-- T -->
+    <div class="az-entry">
+      <div class="az-letter">T</div>
+      <div class="az-head">Threat Intelligence</div>
+      <div class="az-sub">Know Who Your Client Actually Faces</div>
+      <div class="az-body">
+        Red teaming without threat intelligence is just pentesting with a fancier name. The entire value proposition of adversary emulation is that you replicate the TTPs of the actual threat actors targeting your client's industry. That requires research.<br><br>
+        <strong>The pre-engagement research workflow:</strong> Look up the client's industry sector in MITRE ATT&CK Groups. Identify 2-3 active threat actor groups targeting that sector. Pull their MITRE ATT&CK profiles. Find their recent campaign reports (Mandiant, CrowdStrike, SentinelOne, industry ISACs). Build a list of their preferred initial access methods, persistence techniques, C2 protocols, and target data types. Then structure your engagement to use those same TTPs. Now your report tells the client exactly whether they would have caught APT29 — not some hypothetical generic attacker.
+      </div>
+      <div class="az-tools"><span class="az-tool">MITRE ATT&CK</span><span class="az-tool">OpenCTI</span><span class="az-tool">MISP</span><span class="az-tool">Mandiant Reports</span><span class="az-tool">CISA Advisories</span></div>
+      <div class="az-verdict">The question your report should answer isn't "can we be hacked." It's "would we survive APT29 targeting us right now." Answer that one.</div>
+    </div>
+
+    <!-- U -->
+    <div class="az-entry">
+      <div class="az-letter">U</div>
+      <div class="az-head">Unconstrained Delegation</div>
+      <div class="az-sub">The Most Dangerous Misconfiguration in AD</div>
+      <div class="az-body">
+        Unconstrained delegation means: any user who authenticates to this machine will have their TGT (Ticket Granting Ticket) stored in memory on that machine. Including Domain Controllers when they authenticate to printers, file servers, or any other service set to unconstrained.<br><br>
+        <strong>The attack chain:</strong> Find a system with unconstrained delegation (common on old servers, printers, legacy application hosts). Get admin on it. Wait for a Domain Controller to authenticate to it, or coerce authentication using PrinterBug/PetitPotam. The DC's TGT lands in memory. Extract it with Rubeus. Use it to authenticate as the DC. DCSync the entire domain. This technique works on fully patched, fully updated environments — it's a configuration issue, not a software vulnerability.
+      </div>
+      <div class="az-tools"><span class="az-tool">BloodHound (find targets)</span><span class="az-tool">Rubeus (monitor+extract)</span><span class="az-tool">SpoolSample (PrinterBug)</span><span class="az-tool">PetitPotam</span></div>
+      <div class="az-verdict">Find unconstrained delegation systems on day one. They're frequently your fastest path to DA without touching any CVE.</div>
+    </div>
+
+    <!-- V -->
+    <div class="az-entry">
+      <div class="az-letter">V</div>
+      <div class="az-head">Vulnerability Chaining</div>
+      <div class="az-sub">Three Low Findings Equal One Critical</div>
+      <div class="az-body">
+        Standalone vulnerabilities often look manageable. A low CVSS finding here, a medium there. What pentesters miss and red teamers demonstrate is that these findings chain together into catastrophic attack paths that no individual finding's severity reflects.<br><br>
+        <strong>A real chain from a 2024 engagement:</strong> Exposed Jenkins with guest access (Medium) → read build configuration files that contained plaintext credentials for a service account (Medium) → service account had GenericWrite on a high-privilege group in AD (Medium) → added operator-controlled account to Domain Admins (Critical impact). Every finding on its own was "patch it sometime." Together they were a direct path to full domain compromise from the internet. Your report must show these chains, not just list individual findings.
+      </div>
+      <div class="az-tools"><span class="az-tool">BloodHound (chain visualization)</span><span class="az-tool">Draw.io (attack paths)</span><span class="az-tool">ATT&CK Navigator</span></div>
+      <div class="az-verdict">The most important sentence in your report is the one that connects finding #2 to finding #7 and shows how they produced a full compromise together.</div>
+    </div>
+
+    <!-- W -->
+    <div class="az-entry">
+      <div class="az-letter">W</div>
+      <div class="az-head">WMI — Windows Management Instrumentation</div>
+      <div class="az-sub">The Stealthiest Execution Primitive in Windows</div>
+      <div class="az-body">
+        WMI is a legitimate Windows management framework. Every IT department uses it. Defenders can't just block it. And it provides nearly everything an attacker needs: remote code execution, process enumeration, system information, event subscriptions for persistence, and lateral movement — all through a legitimate, signed, always-present Windows component.<br><br>
+        <strong>Why wmiexec is better than PsExec for lateral movement:</strong> No new service installed. No binary dropped to disk (in most implementations). Uses port 135/DCOM, which is almost always open internally. Generates far fewer suspicious events. The downside: slower than PsExec, output retrieval requires a writable share. For stealth over speed, WMI wins every time.
+      </div>
+      <div class="az-tools"><span class="az-tool">wmiexec.py</span><span class="az-tool">Invoke-WMIMethod (PS)</span><span class="az-tool">SharpWMI</span><span class="az-tool">WMIImplant</span></div>
+      <div class="az-verdict">WMI is in every Windows environment, can't be removed, and is used by every IT team. It's the perfect attacker tool hiding in plain sight.</div>
+    </div>
+
+    <!-- X -->
+    <div class="az-entry">
+      <div class="az-letter">X</div>
+      <div class="az-head">XXE & SSRF</div>
+      <div class="az-sub">Web App Vulns That Reach the Internal Network</div>
+      <div class="az-body">
+        XXE (XML External Entity) and SSRF (Server-Side Request Forgery) are particularly valuable to red teamers because they don't just compromise the web application — they open a tunnel into the internal network. The server makes requests on your behalf to internal systems, cloud metadata endpoints, and internal APIs that your external position could never reach directly.<br><br>
+        <strong>The SSRF-to-full-compromise chain:</strong> Find SSRF in a public web app → point it at the AWS metadata endpoint (169.254.169.254) → retrieve IAM credentials → use those credentials with aws-cli → enumerate S3 buckets, EC2 instances, Lambda functions → escalate via IAM privilege escalation → full cloud account compromise. This chain doesn't touch a single endpoint or involve any malware. Pure web app exploitation into cloud environment.
+      </div>
+      <div class="az-tools"><span class="az-tool">Burp Suite Pro</span><span class="az-tool">SSRFmap</span><span class="az-tool">Gopherus</span><span class="az-tool">aws-cli (post-exploit)</span></div>
+      <div class="az-verdict">SSRF to cloud metadata is one of the cleanest paths from web app to cloud admin. Look for it on every external assessment.</div>
+    </div>
+
+    <!-- Y -->
+    <div class="az-entry">
+      <div class="az-letter">Y</div>
+      <div class="az-head">Your Report Changes Things</div>
+      <div class="az-sub">Or It Doesn't. Your Choice.</div>
+      <div class="az-body">
+        Most penetration test reports sit in a shared drive, get reviewed once, have a few tickets created, and are forgotten within six months. The organization is barely more secure than before the engagement. This happens because operators write reports for other operators, not for the people who make security investment decisions.<br><br>
+        <strong>The report that changes things:</strong> Speaks business risk at the top. "We accessed the database containing all customer financial records, which represents regulatory exposure of approximately $X million under GDPR Article 83." Gives non-technical readers a clear picture of what happened without jargon. Shows the remediation path with specific steps and effort estimates. Then goes deep technical in the appendices for the engineering team. Two audiences, two levels of document, one cohesive report. That's the one that gets budgets approved and controls implemented.
+      </div>
+      <div class="az-tools"><span class="az-tool">Ghostwriter</span><span class="az-tool">Pwndoc</span><span class="az-tool">Dradis</span><span class="az-tool">PlexTrac</span><span class="az-tool">Vectr</span></div>
+      <div class="az-verdict">A great hack with a mediocre report produces no lasting change. A mediocre hack with a great report moves the security needle. Write the report.</div>
+    </div>
+
+    <!-- Z -->
+    <div class="az-entry">
+      <div class="az-letter">Z</div>
+      <div class="az-head">Zero Day Mindset</div>
+      <div class="az-sub">You Don't Need Zero Days. You Need to Think Like a Researcher.</div>
+      <div class="az-body">
+        Junior operators think elite hackers use zero days. Most elite red team engagements are won with techniques that are years old, against misconfigurations that have existed since the domain was built. The zero day mindset isn't about finding new CVEs — it's about looking at every system with the curiosity of a researcher and asking: "what assumption did the person who configured this make, and how is that assumption wrong?"<br><br>
+        <strong>The researcher's approach to every target:</strong> What does this component trust? What data does it process without validation? What identity does it run as? What happens if I give it input it wasn't designed for? What implicit trust relationships exist between this and other systems? Apply these questions to everything — AD, web apps, cloud configs, network architecture. 99% of real-world compromises don't need a zero day. They need an operator who thinks carefully about trust, assumptions, and design failures.
+      </div>
+      <div class="az-tools"><span class="az-tool">IRED.team</span><span class="az-tool">HackTricks</span><span class="az-tool">RedTeam.guide</span><span class="az-tool">MITRE ATT&CK</span><span class="az-tool">Exploit-DB</span></div>
+      <div class="az-verdict">The operators who look like they have magic are usually just asking better questions about systems that everyone else takes for granted.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ██████████████████████████████ FOOTER ██████████████████████████████ -->
+<div class="field-footer">
+  <div class="footer-col">
+    <div class="footer-col-label">Legal</div>
+    <p>This framework is for authorized security testing only. All techniques described require written authorization from the system owner before use. Unauthorized access to computer systems is a criminal offense in virtually every jurisdiction.</p>
+  </div>
+  <div class="footer-col">
+    <div class="footer-col-label">Standards</div>
+    <p>Aligned with MITRE ATT&CK v15, PTES (Penetration Testing Execution Standard), OSSTMM v3, and CBEST/TIBER-EU frameworks for financial sector red teaming. TTP IDs reference the ATT&CK Enterprise matrix.</p>
+  </div>
+  <div class="footer-col">
+    <div class="footer-col-label">Resources</div>
+    <p>MITRE ATT&CK Navigator — attack.mitre.org/resources/navigator<br>C2 Matrix — thec2matrix.com<br>IRED.team — ired.team<br>HackTricks — book.hacktricks.xyz<br>RedTeam.guide — redteam.guide</p>
+  </div>
+</div>
+
+</div><!-- /paper -->
+
+<script>
+// Scroll-triggered reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.04, rootMargin: '0px 0px -40px 0px' });
+
+reveals.forEach(el => observer.observe(el));
+
+// Active nav link highlighting
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+
+const navObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.getAttribute('id');
+      navLinks.forEach(link => {
+        link.style.color = link.getAttribute('href') === '#' + id ? 'var(--paper)' : '';
+      });
+    }
+  });
+}, { threshold: 0.3 });
+
+sections.forEach(s => navObserver.observe(s));
+
+// Subtle hover effect on AZ entries
+document.querySelectorAll('.az-entry').forEach(entry => {
+  entry.addEventListener('mouseenter', () => {
+    entry.querySelector('.az-letter').style.opacity = '1';
+    entry.querySelector('.az-letter').style.color = 'rgba(200,0,30,0.12)';
+  });
+  entry.addEventListener('mouseleave', () => {
+    entry.querySelector('.az-letter').style.opacity = '';
+    entry.querySelector('.az-letter').style.color = '';
+  });
+});
+</script>
+</body>
+</html>
